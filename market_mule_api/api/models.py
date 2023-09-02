@@ -1,4 +1,5 @@
 from django.db import models
+import json
 
 class Item:
   def __init__(self, name: str, weight: float):
@@ -9,6 +10,14 @@ class Item:
 
   def get_key(self):
     return (self.name.strip(), int(self.weight))
+  
+
+  def to_dict(self):
+    return {
+      'name': self.name,
+      'weight': self.weight,
+      'quantity': self.quantity
+    }
 
 class Basket:
   _instance = None
@@ -57,6 +66,16 @@ class Basket:
       print(f"Removed item: {closest_item.name}, Weight: {closest_item.weight}")
     else:
       print("No matching items found.")
+  
+  def to_json(self):
+    items_list = list(self.items.values())
+    items_dict_list = list(map(lambda item: item.to_dict(), items_list))
+    response = {
+      'name': self.name,
+      'items': items_dict_list
+    }
+
+    return json.dumps(response)
 
 
 if __name__ == '__main__':
