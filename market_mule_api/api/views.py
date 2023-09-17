@@ -13,7 +13,7 @@ def identity_object(request):
   })
   return HttpResponse(response_json, content_type="application/json")
         
-def read_qr_code(request):
+def read_qrcode(request):
   image_blob = request.FILES.get('image')
   identified_object = identify_by_qrcode(image_blob)
 
