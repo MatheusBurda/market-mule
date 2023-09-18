@@ -1,9 +1,12 @@
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse
 from .models import Basket
 from .identify_service import *
 import json
 
+
+@csrf_exempt
 def identity_object(request):
   image_blob = request.FILES.get('image')
   identified_object = identify_object(image_blob)
@@ -12,9 +15,11 @@ def identity_object(request):
     "object": identified_object
   })
   return HttpResponse(response_json, content_type="application/json")
-        
+
+@csrf_exempt
 def read_qrcode(request):
-  image_blob = request.FILES.get('image')
+  uploaded_file = request.FILES.get('image')
+  image_blob = uploaded_file.read()
   identified_object = identify_by_qrcode(image_blob)
 
   response_json = json.dumps({

@@ -1,4 +1,5 @@
 import cv2
+import numpy
 import qrcode
 
 def identify_object(image_blob) -> str:
@@ -9,15 +10,16 @@ def identify_object(image_blob) -> str:
 def identify_by_qrcode(image_blob):
   try:
     # Read the image from the image_blob (e.g., a binary image file)
-    image = cv2.imdecode(image_blob, cv2.IMREAD_COLOR)
+    image = cv2.imdecode(numpy.frombuffer(image_blob , numpy.uint8), cv2.IMREAD_ANYCOLOR)
 
     # Detect QR codes in the image
     detector = cv2.QRCodeDetector()
-    decoded_info, points, straight_qrcode = detector.detectAndDecodeMulti(image)
-
-    if decoded_info:
+    _, decoded_info, _, _ = detector.detectAndDecodeMulti(image)
+    
+    if len(decoded_info) > 0:
+      qrcode_info = list(filter(lambda info : len(info) > 0, decoded_info))[0]
       # Return the decoded QR code information
-      return decoded_info
+      return qrcode_info
 
     # If no QR code is detected, return None
     return None
