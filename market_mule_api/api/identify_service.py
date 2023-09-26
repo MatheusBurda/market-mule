@@ -1,11 +1,13 @@
 import cv2
 import numpy
 import qrcode
+from yolo import yolo
 
-def identify_object(image_blob) -> str:
-  # TODO: Implement here the logics for the image blob
-  # it shoulds return a string of the main object identified
-  pass
+def identify_object(image_path) -> list:
+  timeout = 40 #seconds
+  yolo(timeout,image_path)
+  objects = yolo.run()
+  return objects
 
 def identify_by_qrcode(image_blob):
   try:
