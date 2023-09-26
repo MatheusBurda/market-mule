@@ -9,9 +9,13 @@ class yolo(threading.Thread):
         self.timeout = timeout
         self.darknet_path = os.getcwd() + "/market_mule_api/yolo/darknet"
         self.image_path = image_path
-        pass
+        
 
     def start(self) -> str:
+        if(not os.path.exists(self.darknet_path)):
+            print("darknet executable didn't found")
+            return None 
+        
         command = (
             "./darknet",
             "detect",          
@@ -19,6 +23,7 @@ class yolo(threading.Thread):
             "yolov3.weights",
             self.image_path
             )
+        
         try:
             process = subprocess.Popen(args=command,
                                     stdout=subprocess.PIPE,
