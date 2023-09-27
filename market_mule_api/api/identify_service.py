@@ -1,13 +1,13 @@
 import cv2
 import numpy
 import qrcode
-from yolo import yolo
+from market_mule_api.yolo import Yolo
 
 def identify_object(image_path) -> list:
-  timeout = 40 #seconds
-  yolo(timeout,image_path)
-  objects = yolo.run()
-  return objects
+  #Thread for identify obj are done on yolo.py
+  #see the example for the utilization
+  pass
+  
 
 def identify_by_qrcode(image_blob):
   try:
