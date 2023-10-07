@@ -75,29 +75,40 @@ class MarketMule:
         if response.status_code != 200:
             print("Error: Could not make the add to basket request.")
 
+    def handle_remove_from_basket_request(self, item_name: str, weight: float):
+        url = path.join(self._base_url, 'remove')
+
+    def add_to_basket_flow(self, weight_measure: float) -> None:
+        item_weight = self._last_weight_measure - weight_measure
+
+        self.handle_add_to_basket_request(self._identified_item, item_weight)
+        self._last_weight_measure = weight_measure
+        self._identified_item = None
+
+    def complete_flow(self):
+        weight_measure = self.get_grams()
+        print(f"Weight Measure: {weight_measure}g")
+        image_bytes = self.take_photo()
+        identified_item = self.handle_identify_request(image_bytes)
+
+        if self._identified_item != '' and self._identified_item is not None:
+            self._identified_item = identified_item
+
+        # If identified object has been put in the basket
+        item_was_added = self._last_weight_measure >= weight_measure + 200 and self._identified_item is not None
+        if item_was_added:
+            self.add_to_basket_flow(weight_measure)
+
+        item_was_removed = self._last_weight_measure <= weight_measure - 200
+        # TODO: Create logic to remove from basket
+
+        time.sleep(1)
+
     def loop(self):
         running = True
         while running:
             try:
-                weight_measure = self.get_grams()
-                print(f"Weight Measure: {weight_measure}g")
-                image_bytes = self.take_photo()
-                identified_item = self.handle_identify_request(image_bytes)
-
-                if self._identified_item != '' and self._identified_item is not None:
-                    self._identified_item = identified_item
-
-                # If identified object has been put in the basket
-                if self._last_weight_measure >= weight_measure + 200 and self._identified_item is not None:
-                    item_weight = self._last_weight_measure - weight_measure
-
-                    self.handle_add_to_basket_request(self._identified_item, item_weight)
-                    self._last_weight_measure = weight_measure
-                    self._identified_item = None
-
-                # TODO: Create logic to remove from basket
-
-                time.sleep(1)
+                self.complete_flow()
             except (KeyboardInterrupt, SystemExit):
                 self.clean_and_exit()
                 running = False
