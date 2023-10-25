@@ -22,6 +22,8 @@ from api import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('basket/', views.basket),
-    path('qrcode', views.read_qrcode),
-    path('recognize', views.identify_object)
+    path('basket/add/', views.add_item),
+    path('basket/remove/', views.remove_item),
+    path('qrcode/', views.read_qrcode),
+    path('recognize/', views.identify_object),
 ]

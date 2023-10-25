@@ -60,7 +60,7 @@ class Basket:
       item = self.items[key_to_remove]
 
       if item.quantity == 1:
-        del item
+        del self.items[key_to_remove]
       else:
         item.quantity -= 1
       print(f"Removed item: {closest_item.name}, Weight: {closest_item.weight}")

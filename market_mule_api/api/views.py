@@ -1,7 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import Basket
+from .models import Basket, Item
 from .identify_service import *
 import json
 
@@ -9,7 +9,7 @@ import json
 @csrf_exempt
 def identity_object(request):
   image_blob = request.FILES.get('image')
-  identified_object = identify_object(image_blob)
+  identified_object = None # identify_object(image_blob)
 
   response_json = json.dumps({
     "object": identified_object
@@ -31,11 +31,22 @@ def basket(request):
   current_basket = Basket('default')
   return HttpResponse(current_basket.to_json(), content_type="application/json")
 
+@csrf_exempt
 def add_item(request):
-  return HttpResponse('', content_type="application/json")
+  current_basket = Basket('default')
+  item_dict = json.loads(request.body)
+  item = Item(item_dict['name'], item_dict['weight'])
+  current_basket.add_item(item)
 
+  return HttpResponse(current_basket.to_json(), content_type="application/json")
+
+@csrf_exempt
 def remove_item(request):
-  return HttpResponse('', content_type="application/json")
+  current_basket = Basket('default')
+  item_dict = json.loads(request.body)
+  current_basket.remove_item(item_dict['name'], item_dict['weight'])
+
+  return HttpResponse(current_basket.to_json(), content_type="application/json")
 
 def identify_object(request):
   return HttpResponse('', content_type="application/json")
