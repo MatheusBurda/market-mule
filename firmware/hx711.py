@@ -32,9 +32,9 @@ class HX711:
         :param pd_sck: Power Down and Serial Clock Input pin
         :param gain: set gain 128, 64, 32
         """
-        self.GAIN = 0
-        self.OFFSET = 0
-        self.SCALE = 1
+        self.GAIN = 128
+        self.OFFSET = 8823646
+        self.SCALE = -21.438
 
         # Setup the gpio pin numbering system
         GPIO.setmode(GPIO.BCM)

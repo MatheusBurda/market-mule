@@ -14,7 +14,7 @@ class MarketMule:
     _sck_gpio = 6
     _ratio = 123
     _offset = 123
-    _base_url = 'http://localhost:3000'
+    _base_url = 'http://localhost:8000'
 
     def __init__(self):
         self.hx711 = HX711(self._data_gpio, self._sck_gpio)
@@ -62,7 +62,7 @@ class MarketMule:
         return parsed_response['object']
 
     def handle_add_to_basket_request(self, item_name: str, weight: float):
-        url = path.join(self._base_url, 'add')
+        url = path.join(self._base_url, 'add') + '/'
         headers = {'Content-Type': 'application/json'}
         data = {
             'name': item_name,
@@ -95,11 +95,11 @@ class MarketMule:
             self._identified_item = identified_item
 
         # If identified object has been put in the basket
-        item_was_added = self._last_weight_measure >= weight_measure + 200 and self._identified_item is not None
+        item_was_added = self._last_weight_measure >= weight_measure + 100 and self._identified_item is not None
         if item_was_added:
             self.add_to_basket_flow(weight_measure)
 
-        item_was_removed = self._last_weight_measure <= weight_measure - 200
+        item_was_removed = self._last_weight_measure <= weight_measure - 100
         # TODO: Create logic to remove from basket
 
         time.sleep(1)
