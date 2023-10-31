@@ -7,14 +7,14 @@ import time
 import sys
 import io
 import requests
+from models import Basket, Item
 
 
 class MarketMule:
     _data_gpio = 5
     _sck_gpio = 6
-    _ratio = 123
-    _offset = 123
-    _base_url = 'http://localhost:3000'
+    _base_url = 'http://localhost:8000'
+    _weight_detect_offset = 100
 
     def __init__(self):
         self.hx711 = HX711(self._data_gpio, self._sck_gpio)
@@ -22,10 +22,9 @@ class MarketMule:
         self.setup()
         self._identified_item = None
         self._last_weight_measure = 0
+        self._basket = Basket('default')
 
     def setup(self):
-        self.hx711.set_offset(self._ratio)
-        self.hx711.set_offset(self._offset)
         self.camera.start_preview()
 
     def clean_and_exit(self):
@@ -62,7 +61,7 @@ class MarketMule:
         return parsed_response['object']
 
     def handle_add_to_basket_request(self, item_name: str, weight: float):
-        url = path.join(self._base_url, 'add')
+        url = path.join(self._base_url, 'add') + '/'
         headers = {'Content-Type': 'application/json'}
         data = {
             'name': item_name,
@@ -76,14 +75,34 @@ class MarketMule:
             print("Error: Could not make the add to basket request.")
 
     def handle_remove_from_basket_request(self, item_name: str, weight: float):
-        url = path.join(self._base_url, 'remove')
+        url = path.join(self._base_url, 'remove') + '/'
+
+        headers = {'Content-Type': 'application/json'}
+        data = {
+            'name': item_name,
+            'weight': weight
+        }
+        json_data = json.dumps(data)
+
+        response = requests.post(url, data=json_data, headers=headers)
+
+        if response.status_code != 200:
+            print("Error: Could not make the add to basket request.")
 
     def add_to_basket_flow(self, weight_measure: float) -> None:
         item_weight = self._last_weight_measure - weight_measure
 
+        item = Item(self._identified_item, item_weight)
+        self._basket.add_item(item)
         self.handle_add_to_basket_request(self._identified_item, item_weight)
         self._last_weight_measure = weight_measure
         self._identified_item = None
+
+    def remove_from_basket_flow(self, weight_measure: float) -> None:
+        removed_item = self._basket.remove_item(weight_measure)
+
+        if removed_item is not None:
+            self.handle_remove_from_basket_request(removed_item.name, removed_item.weight)
 
     def complete_flow(self):
         weight_measure = self.get_grams()
@@ -95,12 +114,13 @@ class MarketMule:
             self._identified_item = identified_item
 
         # If identified object has been put in the basket
-        item_was_added = self._last_weight_measure >= weight_measure + 200 and self._identified_item is not None
+        item_was_added = self._last_weight_measure >= weight_measure + self._weight_detect_offset and self._identified_item is not None
         if item_was_added:
             self.add_to_basket_flow(weight_measure)
 
-        item_was_removed = self._last_weight_measure <= weight_measure - 200
-        # TODO: Create logic to remove from basket
+        item_was_removed = self._last_weight_measure <= weight_measure - self._weight_detect_offset
+        if item_was_removed:
+            self.remove_from_basket_flow(weight_measure)
 
         time.sleep(1)
 

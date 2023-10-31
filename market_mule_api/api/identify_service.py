@@ -36,7 +36,7 @@ def identify_by_qrcode(image_blob):
     _, decoded_info, _, _ = detector.detectAndDecodeMulti(image)
     
     if len(decoded_info) > 0:
-      qrcode_info = list(filter(lambda info : len(info) > 0, decoded_info))[0]
+      qrcode_info = list(filter(lambda info : len(info) > 0, decoded_info))
       # Return the decoded QR code information
       return qrcode_info
 

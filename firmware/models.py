@@ -39,22 +39,21 @@ class Basket:
 
     currentItem.quantity += 1
 
-  def get_closest_weight_item(self, name: str, target_weight: float):
+  def get_closest_weight_item(self, target_weight: float):
     closest_item = None
     min_weight_difference = float('inf')
 
     for key, item in self.items.items():
-      if item.name.strip() == name.strip():
-        weight_difference = abs(item.weight - target_weight)
-        if weight_difference < min_weight_difference:
-          closest_item = item
-          min_weight_difference = weight_difference
+      weight_difference = abs(item.weight - target_weight)
+      if weight_difference < min_weight_difference:
+        closest_item = item
+        min_weight_difference = weight_difference
 
     return closest_item
   
   
-  def remove_item(self, name: str, weight: float):
-    closest_item = self.get_closest_weight_item(name, weight)
+  def remove_item(self, weight: float):
+    closest_item = self.get_closest_weight_item(weight)
     if closest_item:
       key_to_remove = closest_item.get_key()
       item = self.items[key_to_remove]
@@ -64,8 +63,10 @@ class Basket:
       else:
         item.quantity -= 1
       print(f"Removed item: {closest_item.name}, Weight: {closest_item.weight}")
+      return item
     else:
       print("No matching items found.")
+      return None
   
   def to_json(self):
     items_list = list(self.items.values())
