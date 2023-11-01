@@ -8,6 +8,10 @@ import sys
 import io
 import requests
 from models import Basket, Item
+from luma.core.interface.serial import i2c
+from luma.core.render import canvas
+from luma.oled.device import ssd1306
+from models import Basket, Item
 
 
 class MarketMule:
@@ -20,6 +24,8 @@ class MarketMule:
         self.hx711 = HX711(self._data_gpio, self._sck_gpio)
         self.camera = PiCamera()
         self.setup()
+        self.serial = i2c(port=1, address=0x3C)
+        self.device = ssd1306(self.serial, width=128, height=64)
         self._identified_item = None
         self._last_weight_measure = 0
         self._basket = Basket('default')
@@ -39,6 +45,10 @@ class MarketMule:
         time.sleep(.001)
         self.hx711.power_up()
         return measure
+    
+    def display_message(self, message):
+        with canvas(self.device) as draw:
+            draw.text((0, 0), message, fill="white")
 
     def take_photo(self) -> bytes:
         image_bytes = io.BytesIO()
@@ -97,12 +107,14 @@ class MarketMule:
         self.handle_add_to_basket_request(self._identified_item, item_weight)
         self._last_weight_measure = weight_measure
         self._identified_item = None
+        self.display_message("Item added")
 
     def remove_from_basket_flow(self, weight_measure: float) -> None:
         removed_item = self._basket.remove_item(weight_measure)
 
         if removed_item is not None:
             self.handle_remove_from_basket_request(removed_item.name, removed_item.weight)
+            self.display_message("Item removed")
 
     def complete_flow(self):
         weight_measure = self.get_grams()
@@ -112,6 +124,7 @@ class MarketMule:
 
         if self._identified_item != '' and self._identified_item is not None:
             self._identified_item = identified_item
+            self.display_message(f"Identified {identified_item}")
 
         # If identified object has been put in the basket
         item_was_added = self._last_weight_measure >= weight_measure + self._weight_detect_offset and self._identified_item is not None
