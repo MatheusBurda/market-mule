@@ -73,10 +73,11 @@ class Basket:
 
     flat_item_list = []
     for item in items_dict_list:
+
       grouped_item = {
         'name': item['name'],
         'weights': []
-      }
+      } 
       for _ in range(item['quantity']):
         grouped_item['weights'].append(item['weight'])
       flat_item_list.append(grouped_item)

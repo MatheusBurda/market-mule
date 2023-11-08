@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from .models import Basket, Item
 from . import identify_service
 import json
-from prices import prices
+from .products import products
 
 
 @csrf_exempt
@@ -14,11 +14,14 @@ def identify_object(request):
   
   objects_with_price = []
   if identified_objects is not None:
+    # current_basket = Basket('default')
     for object in identified_objects:
-      objects_with_price.append({
-        'name': object,
-        'price': prices[object]
-      })
+      if object in products.keys():
+        # current_basket.add_item(item)
+        objects_with_price.append({
+          'name': object,
+          'price': prices[object]
+        })
 
   response_json = json.dumps(objects_with_price)
   return HttpResponse(response_json, content_type="application/json")
@@ -31,11 +34,14 @@ def read_qrcode(request):
 
   objects_with_price = []
   if identified_objects is not None:
+    # current_basket = Basket('default')
     for object in identified_objects:
-      objects_with_price.append({
-        'name': object,
-        'price': prices[object]
-      })
+      if object in products.keys():
+        # current_basket.add_item(item)
+        objects_with_price.append({
+          'name': object,
+          'price': prices[object]
+        })
 
   response_json = json.dumps(objects_with_price)
   return HttpResponse(response_json, content_type="application/json")
@@ -48,6 +54,10 @@ def basket(request):
 def add_item(request):
   current_basket = Basket('default')
   item_dict = json.loads(request.body)
+  
+  if item_dict['name'] not in products.keys():
+    return HttpResponse(content = {'Error': 'Product not found!'}, content_type="application/json", status=status.HTTP_404_NOT_FOUND)
+  
   item = Item(item_dict['name'], item_dict['weight'])
   current_basket.add_item(item)
 
@@ -57,6 +67,10 @@ def add_item(request):
 def remove_item(request):
   current_basket = Basket('default')
   item_dict = json.loads(request.body)
+
+  if item_dict['name'] not in products.keys():
+    return HttpResponse(content = {'Error': 'Product not found!'}, content_type="application/json", status=status.HTTP_404_NOT_FOUND)
+
   current_basket.remove_item(item_dict['name'], item_dict['weight'])
 
   return HttpResponse(current_basket.to_json(), content_type="application/json")

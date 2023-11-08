@@ -1,53 +1,67 @@
-import { useState, useEffect } from 'react'
-
-
-interface Basket {
-  "name": string;
-  "items": Item[];
-}
+import './BasketList.css'
 
 interface Item {
   "name": string;
   "weights": number[];
 }
 
-export default function BasketList() {
-
-  useEffect(() => {
-    loadItems()
-  });
-
-  const [basketProducts, setBasketProducts] = useState<Item[]>([])
-
-  const getProducts = async () => {
-    const response = await fetch('http://localhost:8000/basket')
-    const basketJson = await response.json()
-    const basket: Basket = JSON.parse(basketJson)
-
-    const basketItems: Item[] = basket.items
-
-    basketItems.sort((a, b) => a.name.localeCompare(b.name))
-
-    setBasketProducts(basketItems)
-  }
-
-  const loadItems = async () => {
-    getProducts()
-    setTimeout(loadItems, 10000);
-  }  
+export default function BasketList(props: { products: Item[] }) {
 
   return (
-    <div>
-      <ul>
+    <div className="BasketDiv">
+      
+      <div className="Header">
+        <h1>Produtos na cesta</h1>
+      </div>
 
-      {basketProducts.map((item)=> {
-      return <>
-        <p>Produto: {item.name}</p>
-        <p>Quantidade: {item.weights.length}</p>
-        <p>Pesos: {item.weights}</p>
-      </>
-      })}
-      </ul>
+      <div className="item-row">
+        <img className="image-box" src={"src/assets/banana.jpg"} />
+        <div className="about">
+          <h1>Banana</h1>
+          <p className='description'>Quantidade: 1</p>
+          <p>Peso total: 250g</p>
+        </div>
+        <div className="amount">
+        <h3 className='price'>
+            R$ 3.19
+          </h3>
+        </div>
+      </div>
+
+      <div className="item-row">
+        <img className="image-box" src={"src/assets/apple.jpg"} />
+        <div className="about">
+          <h1>Maçã</h1>
+          <p className='description'>Quantidade: 1</p>
+          <p>Peso total: 70g</p>
+        </div>
+        <div className="amount">
+          <h3 className='price'>
+            R$ 5.99
+          </h3>
+        </div>
+      </div>     
+
+      <hr />
+
+      <div className="total">
+        <div>
+          <h2>Sub-Total</h2>
+          <p className='description'>2 itens</p>
+        </div>
+        <h1 className='totalAmount'>R$ 6.18</h1>
+      </div>
+
+
+      {/* {props.products.map((item:Item) => {
+      return <tr key={item.name}>
+        <td>{item.name}</td>
+        <td className="description">{item.weights.length}</td>
+        <td>{item.weights}</td>
+      </tr>
+    })} */}
+
     </div>
   )
 }
+

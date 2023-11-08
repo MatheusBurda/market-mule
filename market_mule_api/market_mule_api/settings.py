@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -47,6 +48,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'market_mule_api.urls'
@@ -69,6 +72,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'market_mule_api.wsgi.application'
 
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+]
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
