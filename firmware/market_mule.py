@@ -10,8 +10,9 @@ import requests
 from models import Basket, Item
 from luma.core.interface.serial import i2c
 from luma.core.render import canvas
-from luma.oled.device import ssd1306
+from luma.oled.device import ssd1306, ssd1325, ssd1331, sh1106
 from models import Basket, Item
+from time import sleep
 
 
 class MarketMule:
@@ -25,7 +26,7 @@ class MarketMule:
         self.camera = PiCamera()
         self.setup()
         self.serial = i2c(port=1, address=0x3C)
-        self.device = ssd1306(self.serial, width=128, height=64)
+        self.device = ssd1306(self.serial)
         self._identified_item = None
         self._last_weight_measure = 0
         self._basket = Basket('default')
@@ -48,14 +49,15 @@ class MarketMule:
     
     def display_message(self, message):
         with canvas(self.device) as draw:
-            draw.text((0, 0), message, fill="white")
+            draw.rectangle(self.device.bounding_box, outline="white", fill="black")
+            draw.text((10, 40), message, fill="white")
 
     def take_photo(self) -> bytes:
         image_bytes = io.BytesIO()
         self.camera.capture(image_bytes, 'jpg')
         return image_bytes.read()
 
-    def handle_identify_request(self, image_bytes: bytes) -> str | None:
+    def handle_identify_request(self, image_bytes: bytes):
         url = path.join(self._base_url, 'identify')
         data = {
             'file': image_bytes
@@ -145,3 +147,8 @@ class MarketMule:
             except (KeyboardInterrupt, SystemExit):
                 self.clean_and_exit()
                 running = False
+
+if __name__ == '__main__':
+    mm = MarketMule()
+    mm.display_message("Burda chupa penis")
+    sleep(20)
