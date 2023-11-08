@@ -33,6 +33,7 @@ class MarketMule:
 
     def setup(self):
         self.camera.start_preview()
+        self.hx711.tare()
 
     def clean_and_exit(self):
         print("Cleaning...")
@@ -40,8 +41,14 @@ class MarketMule:
         print("Bye!")
         sys.exit()
 
-    def get_grams(self) -> float:
-        measure = self.hx711.get_grams()
+    def get_grams(self, is_removing=False) -> float:
+        first_measure = self.hx711.get_grams(1)
+        sleep(1)
+        second_measure = self.hx711.get_grams(1)
+        
+        comparing_function = min if is_removing else max
+        measure = comparing_function([first_measure, second_measure])
+
         self.hx711.power_down()
         time.sleep(.001)
         self.hx711.power_up()
@@ -54,7 +61,7 @@ class MarketMule:
 
     def take_photo(self) -> bytes:
         image_bytes = io.BytesIO()
-        self.camera.capture(image_bytes, 'jpg')
+        self.camera.capture(image_bytes, 'jpeg')
         return image_bytes.read()
 
     def handle_identify_request(self, image_bytes: bytes):
@@ -119,8 +126,6 @@ class MarketMule:
             self.display_message("Item removed")
 
     def complete_flow(self):
-        weight_measure = self.get_grams()
-        print(f"Weight Measure: {weight_measure}g")
         image_bytes = self.take_photo()
         identified_item = self.handle_identify_request(image_bytes)
 
@@ -128,11 +133,13 @@ class MarketMule:
             self._identified_item = identified_item
             self.display_message(f"Identified {identified_item}")
 
+        weight_measure = self.get_grams()
         # If identified object has been put in the basket
         item_was_added = self._last_weight_measure >= weight_measure + self._weight_detect_offset and self._identified_item is not None
         if item_was_added:
             self.add_to_basket_flow(weight_measure)
 
+        weight_measure = self.get_grams(is_removing=True)
         item_was_removed = self._last_weight_measure <= weight_measure - self._weight_detect_offset
         if item_was_removed:
             self.remove_from_basket_flow(weight_measure)
@@ -150,5 +157,5 @@ class MarketMule:
 
 if __name__ == '__main__':
     mm = MarketMule()
-    mm.display_message("Burda chupa penis")
-    sleep(20)
+    while True:
+        print(mm.get_grams())
