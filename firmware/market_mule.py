@@ -1,7 +1,3 @@
-import json
-from hx711 import HX711
-from picamera import PiCamera
-from os import path
 import RPi.GPIO as GPIO
 import time
 import sys
@@ -42,12 +38,15 @@ class MarketMule:
         sys.exit()
 
     def get_grams(self, is_removing=False) -> float:
-        first_measure = self.hx711.get_grams(1)
-        sleep(1)
-        second_measure = self.hx711.get_grams(1)
+        measures = [
+            self.hx711.get_grams(1),
+            self.hx711.get_grams(1),
+            self.hx711.get_grams(1)
+        ]
+
         
         comparing_function = min if is_removing else max
-        measure = comparing_function([first_measure, second_measure])
+        measure = comparing_function(measures)
 
         self.hx711.power_down()
         time.sleep(.001)
@@ -65,48 +64,58 @@ class MarketMule:
         return image_bytes.read()
 
     def handle_identify_request(self, image_bytes: bytes):
-        url = path.join(self._base_url, 'identify')
-        data = {
-            'file': image_bytes
-        }
-        response = requests.post(url, data=data)
+        try:
+            url = path.join(self._base_url, 'identify')
+            data = {
+                'file': image_bytes
+            }
+            response = requests.post(url, data=data)
 
-        if response.status_code != 200:
+            if response.status_code != 200:
+                return None
+
+            json_response = response.content.decode('utf-8')
+            # { object: "object_name" }
+            parsed_response = json.loads(json_response)
+            return parsed_response['object']
+        except:
+            print('Error on identifying item: API didnt respond')
             return None
 
-        json_response = response.content.decode('utf-8')
-        # { object: "object_name" }
-        parsed_response = json.loads(json_response)
-        return parsed_response['object']
-
     def handle_add_to_basket_request(self, item_name: str, weight: float):
-        url = path.join(self._base_url, 'add') + '/'
-        headers = {'Content-Type': 'application/json'}
-        data = {
-            'name': item_name,
-            'weight': weight
-        }
-        json_data = json.dumps(data)
+        try:
+            url = path.join(self._base_url, 'add') + '/'
+            headers = {'Content-Type': 'application/json'}
+            data = {
+                'name': item_name,
+                'weight': weight
+            }
+            json_data = json.dumps(data)
 
-        response = requests.post(url, data=json_data, headers=headers)
+            response = requests.post(url, data=json_data, headers=headers)
 
-        if response.status_code != 200:
-            print("Error: Could not make the add to basket request.")
+            if response.status_code != 200:
+                print("Error: Could not make the add to basket request.")
+        except:
+            print('Error on adding item: API didnt respond')
 
     def handle_remove_from_basket_request(self, item_name: str, weight: float):
-        url = path.join(self._base_url, 'remove') + '/'
+        try:
+            url = path.join(self._base_url, 'remove') + '/'
 
-        headers = {'Content-Type': 'application/json'}
-        data = {
-            'name': item_name,
-            'weight': weight
-        }
-        json_data = json.dumps(data)
+            headers = {'Content-Type': 'application/json'}
+            data = {
+                'name': item_name,
+                'weight': weight
+            }
+            json_data = json.dumps(data)
 
-        response = requests.post(url, data=json_data, headers=headers)
+            response = requests.post(url, data=json_data, headers=headers)
 
-        if response.status_code != 200:
-            print("Error: Could not make the add to basket request.")
+            if response.status_code != 200:
+                print("Error: Could not make the add to basket request.")
+        except:
+            print('Error on removing item: API didnt respond')
 
     def add_to_basket_flow(self, weight_measure: float) -> None:
         item_weight = self._last_weight_measure - weight_measure
@@ -126,22 +135,30 @@ class MarketMule:
             self.display_message("Item removed")
 
     def complete_flow(self):
+        print('> Taking photo...')
         image_bytes = self.take_photo()
+        print('> Identifying item...')
         identified_item = self.handle_identify_request(image_bytes)
 
         if self._identified_item != '' and self._identified_item is not None:
+            print(f'> Item identified {identified_item}')
             self._identified_item = identified_item
             self.display_message(f"Identified {identified_item}")
 
+        print('> getting weight measure...')
         weight_measure = self.get_grams()
+        print(f'> Weight measure found: {weight_measure}')
         # If identified object has been put in the basket
         item_was_added = self._last_weight_measure >= weight_measure + self._weight_detect_offset and self._identified_item is not None
         if item_was_added:
             self.add_to_basket_flow(weight_measure)
 
+        print('> getting weight measure...')
         weight_measure = self.get_grams(is_removing=True)
+        print(f'> Weight measure found: {weight_measure}')
         item_was_removed = self._last_weight_measure <= weight_measure - self._weight_detect_offset
         if item_was_removed:
+            print('> removing item...')
             self.remove_from_basket_flow(weight_measure)
 
         time.sleep(1)
