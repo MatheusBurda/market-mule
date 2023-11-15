@@ -1,29 +1,25 @@
 import cv2
 import numpy
 import qrcode
-# from ultralytics import YOLO
+from ultralytics import YOLO
 
-# def identify_object(image_blob) -> list:
-#   #Thread for identify obj are done on yolo.py
-#   #see the example for the utilization
-#   model = YOLO("yolov8n.pt","predict")
-#   image = cv2.imdecode(numpy.frombuffer(image_blob , numpy.uint8), cv2.IMREAD_ANYCOLOR)
-#   results = model.predict(source=image.copy(),stream=True,save=True)
+model = YOLO("yolov8n.pt","predict")
 
-#   if len(results) == 0:
-#     return []
+def identify_object(image_blob) -> list:
+  #Thread for identify obj are done on yolo.py
+  #see the example for the utilization
+  image = cv2.imdecode(numpy.frombuffer(image_blob , numpy.uint8), cv2.IMREAD_ANYCOLOR)
+  results = model.predict(source=image.copy(),stream=True,save=True)
   
-#   items = []
+  items = []
+  for result in results:
+    if result.boxes:
+        box = result.boxes[0]
+        class_id = int(box.cls)
+        object_name = model.names[class_id]
+        items.append(object_name)
 
-#   for result in results:
-#     if result.boxes:
-#         box = result.boxes[0]
-#         class_id = int(box.cls)
-#         object_name = model.names[class_id]
-#         print(object_name)  
-#         items.append(object_name)
-
-#   return items 
+  return items 
   
 
 def identify_by_qrcode(image_blob):
@@ -49,5 +45,5 @@ def identify_by_qrcode(image_blob):
     return None
   
 if __name__ == "__main__":
-  with open("/home/luis/Desktop/market-mule/market_mule_api/api/assets/maca.jpeg","rb") as file:
+  with open("/home/hellhat/market-mule/market_mule_api/api/assets/maca.jpeg","rb") as file:
     identify_object(file.read())

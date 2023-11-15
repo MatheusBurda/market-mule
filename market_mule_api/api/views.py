@@ -20,7 +20,7 @@ def identify_object(request):
         # current_basket.add_item(item)
         objects_with_price.append({
           'name': object,
-          'price': prices[object]
+          'price': products[object]['price']
         })
 
   response_json = json.dumps(objects_with_price)
@@ -40,7 +40,7 @@ def read_qrcode(request):
         # current_basket.add_item(item)
         objects_with_price.append({
           'name': object,
-          'price': prices[object]
+          'price': products[object]['price']
         })
 
   response_json = json.dumps(objects_with_price)
