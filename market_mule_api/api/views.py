@@ -6,7 +6,6 @@ from . import identify_service
 import json
 from .products import products
 
-
 @csrf_exempt
 def identify_object(request):
   image_blob = request.FILES.get('image')
@@ -56,7 +55,7 @@ def add_item(request):
   item_dict = json.loads(request.body)
   
   if item_dict['name'] not in products.keys():
-    return HttpResponse(content = {'Error': 'Product not found!'}, content_type="application/json", status=status.HTTP_404_NOT_FOUND)
+    return HttpResponse(content = {'Error': 'Product not found!'}, content_type="application/json", status=404)
   
   item = Item(item_dict['name'], item_dict['weight'])
   current_basket.add_item(item)
@@ -69,7 +68,7 @@ def remove_item(request):
   item_dict = json.loads(request.body)
 
   if item_dict['name'] not in products.keys():
-    return HttpResponse(content = {'Error': 'Product not found!'}, content_type="application/json", status=status.HTTP_404_NOT_FOUND)
+    return HttpResponse(content = {'Error': 'Product not found!'}, content_type="application/json", status=404)
 
   current_basket.remove_item(item_dict['name'], item_dict['weight'])
 
