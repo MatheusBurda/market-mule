@@ -1,3 +1,7 @@
+import json
+from hx711 import HX711
+from picamera import PiCamera
+from os import path
 import RPi.GPIO as GPIO
 import time
 import sys
@@ -65,19 +69,23 @@ class MarketMule:
 
     def handle_identify_request(self, image_bytes: bytes):
         try:
-            url = path.join(self._base_url, 'identify')
+            url = path.join(self._base_url, 'identify') + '/'
             data = {
                 'file': image_bytes
             }
+            print('> Making request to:', url)
             response = requests.post(url, data=data)
 
             if response.status_code != 200:
                 return None
 
             json_response = response.content.decode('utf-8')
-            # { object: "object_name" }
             parsed_response = json.loads(json_response)
-            return parsed_response['object']
+
+            if len(parsed_response) == 0:
+                return None
+
+            return parsed_response[0]
         except:
             print('Error on identifying item: API didnt respond')
             return None
@@ -85,6 +93,7 @@ class MarketMule:
     def handle_add_to_basket_request(self, item_name: str, weight: float):
         try:
             url = path.join(self._base_url, 'add') + '/'
+            print('> Making request to:', url)
             headers = {'Content-Type': 'application/json'}
             data = {
                 'name': item_name,
@@ -102,7 +111,7 @@ class MarketMule:
     def handle_remove_from_basket_request(self, item_name: str, weight: float):
         try:
             url = path.join(self._base_url, 'remove') + '/'
-
+            print('> Making request to:', url)
             headers = {'Content-Type': 'application/json'}
             data = {
                 'name': item_name,
