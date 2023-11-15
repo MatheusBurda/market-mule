@@ -25,5 +25,5 @@ urlpatterns = [
     path('basket/add/', views.add_item),
     path('basket/remove/', views.remove_item),
     path('qrcode/', views.read_qrcode),
-    path('recognize/', views.identify_object),
+    path('identify/', views.identify_object),
 ]
