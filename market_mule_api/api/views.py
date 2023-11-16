@@ -16,7 +16,10 @@ def identify_object(request):
   if identified_objects is not None:
     # current_basket = Basket('default')
     for object in identified_objects:
+      if '_' in object:
+        object = object.split('_')[1]
       if object in products.keys():
+        print(object)
         # current_basket.add_item(item)
         objects_with_price.append({
           'name': object,
