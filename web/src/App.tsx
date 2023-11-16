@@ -11,8 +11,12 @@ interface Basket {
 interface Item {
   "name": string;
   "weights": number[];
+  "prices": number[];
+  "quantity": number,
+  "total_price": number,
+  "total_weight": number,
+  "image": string
 }
-
 function App() {
 
   const [basketProducts, setBasketProducts] = useState<Item[]>([])
@@ -33,7 +37,7 @@ function App() {
   useEffect(() => {
     
     getProducts()
-    const interval = setInterval(() => getProducts(), 10000)
+    const interval = setInterval(() => getProducts(), 1000)
     return () => {
       clearInterval(interval);
     }

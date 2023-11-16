@@ -1,5 +1,8 @@
-from django.db import models
 import json
+import math
+from django.db import models
+
+from .products import products
 
 class Item:
   def __init__(self, name: str, weight: float):
@@ -70,16 +73,39 @@ class Basket:
   def to_json(self):
     items_list = list(self.items.values())
     items_dict_list = list(map(lambda item: item.to_dict(), items_list))
-
+    
     flat_item_list = []
     for item in items_dict_list:
 
+      index = next((i for i, it in enumerate(flat_item_list) if it["name"] == item['name']), None)
+      
       grouped_item = {
         'name': item['name'],
-        'weights': []
-      } 
-      for _ in range(item['quantity']):
-        grouped_item['weights'].append(item['weight'])
+        'weights': [],
+        'prices': [],
+        'quantity': 0,
+        'total_price': 0,
+        'total_weight': 0,
+        'image': 'src/assets/undefined.jpg'
+      } if index is None else flat_item_list.pop(index)
+
+      product =  products[item['name']]
+
+      grouped_item['weights'] += [item['weight'] for _ in range(item['quantity'])]
+      grouped_item['weights'] = sorted(grouped_item['weights'])
+      grouped_item['quantity'] = len(grouped_item['weights'])
+      
+      grouped_item['prices'] = []
+      for weight in grouped_item['weights']:
+        price = product["price"] if product["default-weight"] == True else weight * product["price"] / 1e3
+        price = round(price, 2)
+        grouped_item['prices'].append(price)
+
+      grouped_item['quantity'] = len(grouped_item['weights'])
+      grouped_item['total_price'] = sum(grouped_item['prices'])
+      grouped_item['total_weight'] = sum(grouped_item['weights'])
+      grouped_item['image'] = product['image']
+
       flat_item_list.append(grouped_item)
 
     response = {
