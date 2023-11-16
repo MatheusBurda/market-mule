@@ -8,7 +8,8 @@ from .products import products
 
 @csrf_exempt
 def identify_object(request):
-  image_blob = request.FILES.get('image')
+  image_blob = request.FILES.get('image').file.read()
+  print(request.FILES)
   identified_objects = identify_service.identify_object(image_blob)
   
   objects_with_price = []

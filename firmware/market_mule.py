@@ -71,7 +71,7 @@ class MarketMule:
         try:
             url = path.join(self._base_url, 'identify') + '/'
             data = {
-                'file': image_bytes
+                'image': image_bytes
             }
             print('> Making request to:', url)
             response = requests.post(url, data=data)
