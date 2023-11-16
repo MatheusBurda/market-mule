@@ -18,7 +18,7 @@ from time import sleep
 class MarketMule:
     _data_gpio = 5
     _sck_gpio = 6
-    _base_url = 'http://localhost:8000'
+    _base_url = 'http://0.tcp.sa.ngrok.io:12464'
     _weight_detect_offset = 100
 
     def __init__(self):
@@ -33,6 +33,13 @@ class MarketMule:
 
     def setup(self):
         self.camera.start_preview()
+        self.camera.resolution = (720, 1080)
+        self.camera.rotation = 90
+        self.camera.brightness = 60
+        self.camera.contrast = 20
+
+        while self.camera.analog_gain <= 1:
+            time.sleep(0.1)
         self.hx711.tare()
 
     def clean_and_exit(self):
@@ -48,7 +55,6 @@ class MarketMule:
             self.hx711.get_grams(1)
         ]
 
-        
         comparing_function = min if is_removing else max
         measure = comparing_function(measures)
 
@@ -63,18 +69,24 @@ class MarketMule:
             draw.text((10, 40), message, fill="white")
 
     def take_photo(self) -> bytes:
-        image_bytes = io.BytesIO()
-        self.camera.capture(image_bytes, 'jpeg')
-        return image_bytes.read()
+        self.camera.capture('/tmp/picture.jpg')
 
     def handle_identify_request(self, image_bytes: bytes):
         try:
-            url = path.join(self._base_url, 'identify') + '/'
+            ia_url = path.join(self._base_url, 'identify') + '/'
+            qrcode_url = path.join(self._base_url, 'qrcode') + '/'
             data = {
                 'image': image_bytes
             }
-            print('> Making request to:', url)
-            response = requests.post(url, data=data)
+            print('> Making request to:', qrcode_url)
+            response = requests.post(qrcode_url, files=data, timeout=30)
+
+            json_response = response.content.decode('utf-8')
+            parsed_response = json.loads(json_response)
+            
+            if response.status_code != 200 or len(parsed_response) == 0:
+                print('> Making request to:', ia_url)
+                response = requests.post(ia_url, files=data, timeout=30)
 
             if response.status_code != 200:
                 return None
@@ -85,14 +97,14 @@ class MarketMule:
             if len(parsed_response) == 0:
                 return None
 
-            return parsed_response[0]
+            return parsed_response[0]['name']
         except:
             print('Error on identifying item: API didnt respond')
             return None
 
     def handle_add_to_basket_request(self, item_name: str, weight: float):
         try:
-            url = path.join(self._base_url, 'add') + '/'
+            url = path.join(self._base_url, 'basket', 'add') + '/'
             print('> Making request to:', url)
             headers = {'Content-Type': 'application/json'}
             data = {
@@ -110,7 +122,7 @@ class MarketMule:
 
     def handle_remove_from_basket_request(self, item_name: str, weight: float):
         try:
-            url = path.join(self._base_url, 'remove') + '/'
+            url = path.join(self._base_url, 'basket', 'remove') + '/'
             print('> Making request to:', url)
             headers = {'Content-Type': 'application/json'}
             data = {
@@ -127,7 +139,7 @@ class MarketMule:
             print('Error on removing item: API didnt respond')
 
     def add_to_basket_flow(self, weight_measure: float) -> None:
-        item_weight = self._last_weight_measure - weight_measure
+        item_weight = weight_measure - self._last_weight_measure
 
         item = Item(self._identified_item, item_weight)
         self._basket.add_item(item)
@@ -141,15 +153,18 @@ class MarketMule:
 
         if removed_item is not None:
             self.handle_remove_from_basket_request(removed_item.name, removed_item.weight)
+            self._last_weight_measure -= weight_measure
             self.display_message("Item removed")
 
     def complete_flow(self):
         print('> Taking photo...')
-        image_bytes = self.take_photo()
+        self.take_photo()
         print('> Identifying item...')
-        identified_item = self.handle_identify_request(image_bytes)
 
-        if self._identified_item != '' and self._identified_item is not None:
+        with open('/tmp/picture.jpg', 'rb') as f:
+            identified_item = self.handle_identify_request(f.read())
+
+        if identified_item != '' and identified_item is not None:
             print(f'> Item identified {identified_item}')
             self._identified_item = identified_item
             self.display_message(f"Identified {identified_item}")
@@ -158,17 +173,18 @@ class MarketMule:
         weight_measure = self.get_grams()
         print(f'> Weight measure found: {weight_measure}')
         # If identified object has been put in the basket
-        item_was_added = self._last_weight_measure >= weight_measure + self._weight_detect_offset and self._identified_item is not None
+        item_was_added = self._last_weight_measure < weight_measure - self._weight_detect_offset and self._identified_item is not None
         if item_was_added:
+            print('> adding item...')
             self.add_to_basket_flow(weight_measure)
 
         print('> getting weight measure...')
         weight_measure = self.get_grams(is_removing=True)
         print(f'> Weight measure found: {weight_measure}')
-        item_was_removed = self._last_weight_measure <= weight_measure - self._weight_detect_offset
+        item_was_removed = self._last_weight_measure > weight_measure + self._weight_detect_offset
         if item_was_removed:
             print('> removing item...')
-            self.remove_from_basket_flow(weight_measure)
+            self.remove_from_basket_flow(self._last_weight_measure - weight_measure)
 
         time.sleep(1)
 
@@ -185,3 +201,4 @@ if __name__ == '__main__':
     mm = MarketMule()
     while True:
         print(mm.get_grams())
+

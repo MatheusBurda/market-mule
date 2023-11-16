@@ -67,8 +67,10 @@ products = {
     "default-weight": True,
     "image": "src/assets/chocolate.png"
   },
-
-
+  "mango":{
+  "price": 1.8,
+  "default-weight": 0,
+  "image": "src/assets/undefined.jpg"} ,
   # "lettuce":{
   # "price": 0.7,# Per Kg
   # "default-weight": False,
@@ -115,10 +117,6 @@ products = {
   # "image": "src/assets/undefined.jpg"} ,
   # "lime":{
   # "price": 0.7,# Per Kg
-  # "default-weight": False,
-  # "image": "src/assets/undefined.jpg"} ,
-  # "mango":{
-  # "price": 1.8,# Per Kg
   # "default-weight": False,
   # "image": "src/assets/undefined.jpg"} ,
   # "grapefruit":{

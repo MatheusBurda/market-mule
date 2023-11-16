@@ -3,7 +3,7 @@ import numpy
 import qrcode
 from ultralytics import YOLO
 
-model = YOLO("yolov8n.pt","predict")
+model = YOLO("best.pt","predict")
 
 def identify_object(image_blob) -> list:
   #Thread for identify obj are done on yolo.py
@@ -28,21 +28,21 @@ def identify_by_qrcode(image_blob):
     image = cv2.imdecode(numpy.frombuffer(image_blob , numpy.uint8), cv2.IMREAD_ANYCOLOR)
 
     # Detect QR codes in the image
-    detector = cv2.QRCodeDetector()
-    _, decoded_info, _, _ = detector.detectAndDecodeMulti(image)
+    detect = cv2.QRCodeDetector()
+    value, points, straight_qrcode = detect.detectAndDecode(image)
+    print('> QR CODE RESULT:', value)
     
-    if len(decoded_info) > 0:
-      qrcode_info = list(filter(lambda info : len(info) > 0, decoded_info))
+    if len(value) > 0:
       # Return the decoded QR code information
-      return qrcode_info
+      return [value]
 
     # If no QR code is detected, return None
-    return None
+    return []
   
   except Exception as e:
     # Handle any exceptions that may occur during processing
     print(f"An error occurred: {e}")
-    return None
+    return []
   
 if __name__ == "__main__":
   with open("/home/hellhat/market-mule/market_mule_api/api/assets/maca.jpeg","rb") as file:
