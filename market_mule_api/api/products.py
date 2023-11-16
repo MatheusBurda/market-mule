@@ -68,9 +68,10 @@ products = {
     "image": "src/assets/chocolate.png"
   },
   "mango":{
-  "price": 1.8,
-  "default-weight": 0,
-  "image": "src/assets/undefined.jpg"} ,
+    "price": 1.8,
+    "default-weight": False,
+    "image": "src/assets/mango.png"
+  },
   # "lettuce":{
   # "price": 0.7,# Per Kg
   # "default-weight": False,
