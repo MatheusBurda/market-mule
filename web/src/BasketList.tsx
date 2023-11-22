@@ -12,7 +12,17 @@ interface Item {
 
 export default function BasketList(props: { products: Item[] }) {
   return (
-    <div className="BasketDiv">
+    props.products.length === 0 ? 
+    <div className="BasketDiv" >
+      <h2>
+        Poxa, não há produtos na cesta no momento.
+      </h2>
+      <h3>
+        Mostre o produto para a câmera e coloque-o dentro da cesta!!
+      </h3>
+    </div>
+
+      : (<div className="BasketDiv">
       
       <div className="Header">
         <h1>Produtos na cesta</h1>
@@ -44,7 +54,7 @@ export default function BasketList(props: { products: Item[] }) {
         <h1 className='totalAmount'>R$ {props.products.reduce((a, b) => a + b.total_price, 0).toFixed(2)}</h1>
       </div>
 
-    </div>
+    </div>)
   )
 }
 
