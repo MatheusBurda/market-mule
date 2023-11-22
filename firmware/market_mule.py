@@ -181,7 +181,7 @@ class MarketMule:
         print('> getting weight measure...')
         weight_measure = self.get_grams(is_removing=True)
         print(f'> Weight measure found: {weight_measure}')
-        item_was_removed = self._last_weight_measure > weight_measure + self._weight_detect_offset
+        item_was_removed = self._last_weight_measure > weight_measure + self._weight_detect_offset and self._identified_item is not None
         if item_was_removed:
             print('> removing item...')
             self.remove_from_basket_flow(self._last_weight_measure - weight_measure)
