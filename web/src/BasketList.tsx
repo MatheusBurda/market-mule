@@ -12,16 +12,26 @@ interface Item {
 
 export default function BasketList(props: { products: Item[] }) {
   return (
-    props.products.length === 0 ? 
-    <div className="BasketDiv" >
-      <h2>
-        Poxa, não há produtos na cesta no momento.
-      </h2>
-      <h3>
-        Mostre o produto para a câmera e coloque-o dentro da cesta!!
-      </h3>
+    props.products.length === 0 ? <>
+    <h1>
+      Poxa, não há produtos na cesta no momento!
+    </h1>
+    <div className='divEmpty'>
+      <img className='InstructionsImg' src='./src/assets/show_basket.png'/>
+      <div>
+        <p>
+          1 - Mostre o produto para a câmera
+        </p>
+        <p>
+          2 - Aguarde o produto ser identificado
+        </p>
+        <p>
+          3 - Coloque-o dentro da cesta
+        </p>
+      </div>
     </div>
 
+    </>
       : (<div className="BasketDiv">
       
       <div className="Header">

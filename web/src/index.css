@@ -1,7 +1,8 @@
 body{
 	margin: 0;
 	padding: 0;
-	background: linear-gradient(to bottom right, #E3F0FF, #FAFCFF);
+	background: #b1d4fc;
+	/* background: linear-gradient(to bottom right, #E3F0FF, #FAFCFF); */
 	height: 100vh;
 	display: flex;
 	justify-content: center;
