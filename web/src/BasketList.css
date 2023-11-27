@@ -1,3 +1,23 @@
+body{
+	margin: 0;
+	padding: 0;
+	background: #b1d4fc;
+	/* background: linear-gradient(to bottom right, #E3F0FF, #FAFCFF); */
+	height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+  width: 100%;
+}
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
 .InstructionsImg {
 	width: 300px;
 }
@@ -133,4 +153,52 @@ hr{
   margin-left: 1rem;
 }
 
-  
+hr {
+	margin-bottom: 1rem;
+}
+
+/* Media Query for Mobile Devices */
+@media only screen and (max-width: 768px) {
+	.item-row {
+		grid-template-columns: 1fr;
+	}
+
+	.full {
+		text-align: center;
+		padding: 1rem;
+	}
+
+	.divEmpty {
+		display: flex;
+		flex-direction: column;
+		justify-items: center;
+	}
+
+	.divEmpty img {
+		width: 20rem;
+		margin-bottom: 3rem;
+	}
+
+	.divEmpty p {
+		font-size: 1.5rem;
+		line-height: 1.8rem;
+		text-align: justify;
+	}
+
+	.BasketDiv img {
+		width: 3rem;
+	}
+
+	.item-row {
+		margin-bottom: 1.5rem;
+	}
+
+	h1 {
+		font-size: 1.7rem;
+	}
+
+	h3 {
+		font-size: 1.25rem;
+	}
+}
+
