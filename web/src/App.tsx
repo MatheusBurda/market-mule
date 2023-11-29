@@ -22,7 +22,7 @@ function App() {
   const [basketProducts, setBasketProducts] = useState<Item[]>([])
 
   const getProducts = async () => {
-    const response = await fetch('http://localhost:8000/basket/')
+    const response = await fetch('http://192.168.178.11:8000/basket/')
     const basketJson = await response.json()
     const basketJsonString = JSON.stringify(basketJson)
     const basket: Basket = JSON.parse(basketJsonString)

@@ -3,7 +3,7 @@ import numpy
 import qrcode
 from ultralytics import YOLO
 
-model = YOLO("best.pt","predict")
+model = YOLO("yolov8n.pt","predict")
 
 def identify_object(image_blob) -> list:
   #Thread for identify obj are done on yolo.py
